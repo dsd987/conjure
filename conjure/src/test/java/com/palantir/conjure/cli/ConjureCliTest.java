@@ -110,6 +110,16 @@ public final class ConjureCliTest {
     }
 
     @Test
+    public void generatesCodeImport() {
+        CliConfiguration configuration = CliConfiguration.builder()
+                .inputFiles(ImmutableList.of(new File("src/test/resources/test-service-imports.yml")))
+                .outputIrFile(outputFile)
+                .build();
+        ConjureCli.CompileCommand.generate(configuration);
+        assertThat(outputFile.isFile()).isTrue();
+    }
+
+    @Test
     public void throwsWhenInvalidDefinition() throws Exception {
         CliConfiguration configuration = CliConfiguration.builder()
                 .inputFiles(ImmutableList.of(inputFile))

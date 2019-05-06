@@ -1,0 +1,31 @@
+types:
+  imports:
+    ResourceIdentifier:
+      base-type: string
+      external:
+        java: com.palantir.ri.ResourceIdentifier
+
+  conjure-imports:
+    deps: test-service-imports-dependency.yml
+
+  definitions:
+    default-package: test.api
+    objects:
+      SimpleObject:
+        fields:
+          blah: string
+
+services:
+  TestService:
+    name: Test Service
+    package: test.api
+
+    endpoints:
+      get:
+        http: POST /get
+        args:
+          object: SimpleObject
+          test:
+            param-type: query
+            type: string
+

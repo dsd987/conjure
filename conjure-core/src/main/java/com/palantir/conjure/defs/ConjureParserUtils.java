@@ -17,6 +17,7 @@
 package com.palantir.conjure.defs;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.palantir.conjure.defs.ConjureTypeParserVisitor.ReferenceTypeResolver;
 import com.palantir.conjure.defs.validator.ConjureDefinitionValidator;
@@ -28,6 +29,7 @@ import com.palantir.conjure.defs.validator.FieldDefinitionValidator;
 import com.palantir.conjure.defs.validator.FieldNameValidator;
 import com.palantir.conjure.defs.validator.HttpPathValidator;
 import com.palantir.conjure.defs.validator.ObjectDefinitionValidator;
+import com.palantir.conjure.defs.validator.ObjectImportValidator;
 import com.palantir.conjure.defs.validator.PackageValidator;
 import com.palantir.conjure.defs.validator.ServiceDefinitionValidator;
 import com.palantir.conjure.defs.validator.TypeNameValidator;
@@ -195,6 +197,7 @@ public final class ConjureParserUtils {
         ImmutableList.Builder<TypeDefinition> typesBuilder = ImmutableList.builder();
 
         parsedDefs.forEach(parsed -> {
+            ObjectImportValidator.validate(parsed);
             ConjureTypeParserVisitor.ReferenceTypeResolver typeResolver =
                     new ConjureTypeParserVisitor.ByParsedRepresentationTypeNameResolver(parsed.types());
 
@@ -207,14 +210,16 @@ public final class ConjureParserUtils {
 
             DealiasingTypeVisitor dealiasingVisitor = new DealiasingTypeVisitor(allObjects);
 
+            List<ServiceDefinition> allServiceDefinitions = Lists.newArrayList();
             parsed.services().forEach((serviceName, service) -> {
-                servicesBuilder.add(parseService(
+                allServiceDefinitions.add(parseService(
                         service,
                         TypeName.of(serviceName.name(), parseConjurePackage(service.conjurePackage())),
                         typeResolver,
                         dealiasingVisitor));
             });
 
+            servicesBuilder.addAll(allServiceDefinitions);
             typesBuilder.addAll(objects.values());
             errorsBuilder.addAll(parseErrors(parsed.types().definitions(), typeResolver));
         });
